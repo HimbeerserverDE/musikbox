@@ -1,9 +1,6 @@
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use gstreamer_player::prelude::*;
-use gstreamer_player::{
-    Player, PlayerGMainContextSignalDispatcher, PlayerSignalDispatcher, PlayerVideoRenderer,
-};
+use gstreamer_play::{Play, PlayVideoRenderer};
 use std::fs;
 use std::io;
 use tui::style::{Color, Style};
@@ -14,11 +11,7 @@ fn main() -> anyhow::Result<()> {
     gstreamer::init()?;
     enable_raw_mode()?;
 
-    let dispatcher = PlayerGMainContextSignalDispatcher::new(None);
-    let player = Player::new(
-        PlayerVideoRenderer::NONE,
-        Some(&dispatcher.upcast::<PlayerSignalDispatcher>()),
-    );
+    let play = Play::new(PlayVideoRenderer::NONE);
 
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
@@ -79,8 +72,8 @@ fn main() -> anyhow::Result<()> {
                     let file_name = &files[track];
                     let uri = format!("file://{}", file_name);
 
-                    player.set_uri(Some(&uri));
-                    player.play();
+                    play.set_uri(Some(&uri));
+                    play.play();
                 }
                 _ => {}
             }
