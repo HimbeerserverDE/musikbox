@@ -17,6 +17,7 @@ fn main() -> anyhow::Result<()> {
         .collect();
 
     let mut list_state = ListState::default();
+    list_state.select(Some(0));
 
     loop {
         terminal.draw(|f| {
@@ -25,7 +26,7 @@ fn main() -> anyhow::Result<()> {
             let files: Vec<ListItem> = files.iter().map(|e| ListItem::new(e.clone())).collect();
 
             let block = Block::default().title("Files").borders(Borders::ALL);
-            let listing = List::new(files).block(block);
+            let listing = List::new(files).block(block).highlight_symbol("> ");
 
             f.render_stateful_widget(listing, size, &mut list_state);
         })?;
