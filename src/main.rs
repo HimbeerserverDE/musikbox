@@ -53,6 +53,10 @@ fn main() -> anyhow::Result<()> {
                     })),
                     None => list_state.select(Some(files.len() - 1)),
                 },
+                KeyCode::Char('r') => {
+                    let track = rand::random::<usize>() % files.len();
+                    list_state.select(Some(track));
+                }
                 _ => {}
             }
         }
