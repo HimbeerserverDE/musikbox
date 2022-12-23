@@ -36,6 +36,18 @@ fn main() -> anyhow::Result<()> {
                 KeyCode::Esc => {
                     break;
                 }
+                KeyCode::Down => match list_state.selected() {
+                    Some(i) => list_state.select(Some((i + 1) % files.len())),
+                    None => list_state.select(Some(0)),
+                },
+                KeyCode::Up => match list_state.selected() {
+                    Some(i) => list_state.select(Some(if i > 0 {
+                        (i - 1) % files.len()
+                    } else {
+                        files.len() - 1
+                    })),
+                    None => list_state.select(Some(files.len() - 1)),
+                },
                 _ => {}
             }
         }
