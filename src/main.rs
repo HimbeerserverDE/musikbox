@@ -2,6 +2,7 @@ use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::fs;
 use std::io;
+use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
 
@@ -26,7 +27,11 @@ fn main() -> anyhow::Result<()> {
             let files: Vec<ListItem> = files.iter().map(|e| ListItem::new(e.clone())).collect();
 
             let block = Block::default().title("Files").borders(Borders::ALL);
-            let listing = List::new(files).block(block).highlight_symbol("> ");
+            let listing = List::new(files)
+                .block(block)
+                .style(Style::default().bg(Color::Black).fg(Color::Green))
+                .highlight_style(Style::default().bg(Color::Green).fg(Color::Black))
+                .highlight_symbol("> ");
 
             f.render_stateful_widget(listing, size, &mut list_state);
         })?;
