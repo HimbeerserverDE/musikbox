@@ -59,6 +59,8 @@ fn main() -> anyhow::Result<()> {
     }
 
     disable_raw_mode()?;
+    terminal.clear()?;
+    terminal.set_cursor(0, 0)?;
 
     Ok(())
 }
