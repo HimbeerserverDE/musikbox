@@ -3,6 +3,7 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use gstreamer_play::{Play, PlayVideoRenderer};
 use std::fs;
 use std::io;
+use std::path::PathBuf;
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
@@ -17,8 +18,8 @@ fn main() -> anyhow::Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let files: Vec<String> = fs::read_dir("/home/himbeer/music")?
-        .map(|e| e.unwrap().file_name().into_string().unwrap())
+    let files: Vec<PathBuf> = fs::read_dir("/home/himbeer/music")?
+        .map(|e| e.unwrap().path())
         .collect();
 
     let mut list_state = ListState::default();
@@ -28,7 +29,10 @@ fn main() -> anyhow::Result<()> {
         terminal.draw(|f| {
             let size = f.size();
 
-            let files: Vec<ListItem> = files.iter().map(|e| ListItem::new(e.clone())).collect();
+            let files: Vec<ListItem> = files
+                .iter()
+                .map(|e| ListItem::new(e.file_name().unwrap().to_str().unwrap()))
+                .collect();
 
             let block = Block::default().title("Files").borders(Borders::ALL);
             let listing = List::new(files)
@@ -69,8 +73,8 @@ fn main() -> anyhow::Result<()> {
                         }
                     };
 
-                    let file_name = &files[track];
-                    let uri = format!("file://{}", file_name);
+                    let file_path = &files[track];
+                    let uri = format!("file://{}", file_path.display());
 
                     play.set_uri(Some(&uri));
                     play.play();
