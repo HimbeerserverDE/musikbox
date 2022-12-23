@@ -29,7 +29,7 @@ fn main() -> anyhow::Result<()> {
             let block = Block::default().title("Files").borders(Borders::ALL);
             let listing = List::new(files)
                 .block(block)
-                .style(Style::default().bg(Color::Black).fg(Color::Green))
+                .style(Style::default().bg(Color::Reset).fg(Color::Green))
                 .highlight_style(Style::default().bg(Color::Green).fg(Color::Black))
                 .highlight_symbol("> ");
 
