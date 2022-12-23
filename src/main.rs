@@ -1,5 +1,9 @@
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use gstreamer_player::prelude::*;
+use gstreamer_player::{
+    Player, PlayerGMainContextSignalDispatcher, PlayerSignalDispatcher, PlayerVideoRenderer,
+};
 use std::fs;
 use std::io;
 use tui::style::{Color, Style};
@@ -7,7 +11,14 @@ use tui::widgets::{Block, Borders, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
 
 fn main() -> anyhow::Result<()> {
+    gstreamer::init()?;
     enable_raw_mode()?;
+
+    let dispatcher = PlayerGMainContextSignalDispatcher::new(None);
+    let player = Player::new(
+        PlayerVideoRenderer::NONE,
+        Some(&dispatcher.upcast::<PlayerSignalDispatcher>()),
+    );
 
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
@@ -56,6 +67,20 @@ fn main() -> anyhow::Result<()> {
                 KeyCode::Char('r') => {
                     let track = rand::random::<usize>() % files.len();
                     list_state.select(Some(track));
+                }
+                KeyCode::Enter => {
+                    let track = match list_state.selected() {
+                        Some(i) => i,
+                        None => {
+                            continue;
+                        }
+                    };
+
+                    let file_name = &files[track];
+                    let uri = format!("file://{}", file_name);
+
+                    player.set_uri(Some(&uri));
+                    player.play();
                 }
                 _ => {}
             }
