@@ -2,7 +2,7 @@ use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::fs;
 use std::io;
-use tui::widgets::{Block, Borders, List, ListItem};
+use tui::widgets::{Block, Borders, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
 
 fn main() -> anyhow::Result<()> {
@@ -16,18 +16,20 @@ fn main() -> anyhow::Result<()> {
         .map(|e| e.unwrap().file_name().into_string().unwrap())
         .collect();
 
-    terminal.draw(|f| {
-        let size = f.size();
-
-        let files: Vec<ListItem> = files.iter().map(|e| ListItem::new(e.clone())).collect();
-
-        let block = Block::default().title("Files").borders(Borders::ALL);
-        let listing = List::new(files).block(block);
-
-        f.render_widget(listing, size);
-    })?;
+    let mut list_state = ListState::default();
 
     loop {
+        terminal.draw(|f| {
+            let size = f.size();
+
+            let files: Vec<ListItem> = files.iter().map(|e| ListItem::new(e.clone())).collect();
+
+            let block = Block::default().title("Files").borders(Borders::ALL);
+            let listing = List::new(files).block(block);
+
+            f.render_stateful_widget(listing, size, &mut list_state);
+        })?;
+
         if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Esc => {
