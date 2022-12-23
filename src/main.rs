@@ -12,21 +12,14 @@ fn main() -> anyhow::Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
+    let files: Vec<String> = fs::read_dir("/home/himbeer/music")?
+        .map(|e| e.unwrap().file_name().into_string().unwrap())
+        .collect();
+
     terminal.draw(|f| {
         let size = f.size();
 
-        let files: Vec<ListItem> = fs::read_dir("/home/himbeer/music")
-            .expect("can't read music directory")
-            .map(|entry| {
-                let file = entry
-                    .expect("faulty DirEntry")
-                    .file_name()
-                    .into_string()
-                    .expect("file name contains invalid unicode");
-
-                ListItem::new(file)
-            })
-            .collect();
+        let files: Vec<ListItem> = files.iter().map(|e| ListItem::new(e.clone())).collect();
 
         let block = Block::default().title("Files").borders(Borders::ALL);
         let listing = List::new(files).block(block);
