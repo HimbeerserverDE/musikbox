@@ -1,8 +1,7 @@
+use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::fs;
 use std::io;
-use std::thread;
-use std::time::Duration;
 use tui::widgets::{Block, Borders, List, ListItem};
 use tui::{backend::CrosstermBackend, Terminal};
 
@@ -35,7 +34,16 @@ fn main() -> anyhow::Result<()> {
         f.render_widget(listing, size);
     })?;
 
-    thread::sleep(Duration::from_secs(3));
+    loop {
+        if let Event::Key(key) = event::read()? {
+            match key.code {
+                KeyCode::Esc => {
+                    break;
+                }
+                _ => {}
+            }
+        }
+    }
 
     disable_raw_mode()?;
 
