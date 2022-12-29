@@ -18,9 +18,11 @@ fn main() -> anyhow::Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let files: Vec<PathBuf> = fs::read_dir("/home/himbeer/music")?
+    let mut files: Vec<PathBuf> = fs::read_dir("/home/himbeer/music")?
         .map(|e| e.unwrap().path())
         .collect();
+
+    files.sort();
 
     let mut list_state = ListState::default();
     list_state.select(Some(0));
