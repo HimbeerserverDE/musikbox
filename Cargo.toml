@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.68"
+clap = { version = "4.0.32", features = ["derive"] }
 crossterm = "0.25.0"
 gstreamer = "0.19.4"
 gstreamer-play = "0.19.4"

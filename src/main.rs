@@ -1,3 +1,4 @@
+use clap::Parser;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use gstreamer_play::{Play, PlayVideoRenderer};
@@ -8,7 +9,17 @@ use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
 
+#[derive(Debug, Parser)]
+#[command(author = "Himbeer", version = "v0.1.0", about = "A custom music player for the command line, written in Rust.", long_about = None)]
+struct Args {
+    /// Playlist directory. Defaults to current directory.
+    #[arg(short = 'd', long = "dir")]
+    dir: Option<String>,
+}
+
 fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+
     gstreamer::init()?;
     enable_raw_mode()?;
 
@@ -18,7 +29,7 @@ fn main() -> anyhow::Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut files: Vec<PathBuf> = fs::read_dir("/home/himbeer/music")?
+    let mut files: Vec<PathBuf> = fs::read_dir(args.dir.unwrap_or_else(|| String::from(".")))?
         .map(|e| e.unwrap().path())
         .collect();
 
