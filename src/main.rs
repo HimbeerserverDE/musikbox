@@ -59,7 +59,7 @@ fn main() -> anyhow::Result<()> {
 
         if let Event::Key(key) = event::read()? {
             match key.code {
-                KeyCode::Esc => {
+                KeyCode::Esc | KeyCode::Char('q') => {
                     break;
                 }
                 KeyCode::Down => match list_state.selected() {
