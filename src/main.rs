@@ -47,7 +47,7 @@ fn main() -> anyhow::Result<()> {
                 .map(|e| ListItem::new(e.file_name().unwrap().to_str().unwrap()))
                 .collect();
 
-            let block = Block::default().title("Files").borders(Borders::ALL);
+            let block = Block::default().title("Select music").borders(Borders::ALL);
             let listing = List::new(files)
                 .block(block)
                 .style(Style::default().bg(Color::Reset).fg(Color::Green))
