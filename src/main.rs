@@ -82,6 +82,20 @@ fn play_path<T: fmt::Display>(play: &Play, path: T) {
     play.play();
 }
 
+/// Get the progress ratio of the current song.
+/// Returns 0.0 if no song is selected.
+fn current_progress(play: &Play) -> f64 {
+    if let Some(position) = play.position() {
+        if let Some(duration) = play.duration() {
+            position.seconds() as f64 / duration.seconds() as f64
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
@@ -186,15 +200,7 @@ fn main() -> anyhow::Result<()> {
                 .block(block)
                 .style(main_style)
                 .gauge_style(main_style.fg(Color::Blue))
-                .ratio(if let Some(position) = play.position() {
-                    if let Some(duration) = play.duration() {
-                        position.seconds() as f64 / duration.seconds() as f64
-                    } else {
-                        0.0
-                    }
-                } else {
-                    0.0
-                });
+                .ratio(current_progress(&play));
 
             let control_buttons = if is_paused(&play) {
                 String::from(
@@ -237,17 +243,7 @@ fn main() -> anyhow::Result<()> {
             f.render_widget(control_paragraph, control_size);
         })?;
 
-        let progress_ratio = if let Some(position) = play.position() {
-            if let Some(duration) = play.duration() {
-                position.seconds() as f64 / duration.seconds() as f64
-            } else {
-                0.0
-            }
-        } else {
-            0.0
-        };
-
-        if progress_ratio == 1.0 {
+        if current_progress(&play) == 1.0 {
             if autoplay_state.repeat {
                 play.play();
             } else if autoplay_state.sequential {
