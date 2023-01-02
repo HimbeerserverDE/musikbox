@@ -19,12 +19,15 @@ struct Args {
     /// Playlist directory. Defaults to current directory.
     #[arg(short = 'd', long = "dir")]
     dir: Option<String>,
-    /// Play file on startup.
+    /// Play file on startup. Overrides --random.
     #[arg(short = 'p', long = "play")]
     play: Option<String>,
     /// Exit when there are no songs left to play. Useful in scripts.
     #[arg(short = 'e', long = "no-remain")]
     no_remain: bool,
+    /// Play random file on startup. Overridden by --play.
+    #[arg(short = 'r', long = "random")]
+    random: bool,
 }
 
 #[derive(Debug)]
@@ -111,9 +114,9 @@ fn main() -> anyhow::Result<()> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut files: Vec<PathBuf> = fs::read_dir(args.dir.unwrap_or_else(|| String::from(".")))?
-        .map(|e| e.unwrap().path())
-        .collect();
+    let dir = args.dir.unwrap_or_else(|| String::from("."));
+
+    let mut files: Vec<PathBuf> = fs::read_dir(dir)?.map(|e| e.unwrap().path()).collect();
 
     files.sort();
 
@@ -122,6 +125,9 @@ fn main() -> anyhow::Result<()> {
 
     if let Some(initial) = args.play {
         play_path(&play, initial);
+    } else if args.random {
+        let track = rand::random::<usize>() % files.len();
+        play_path(&play, files[track].display());
     }
 
     loop {
