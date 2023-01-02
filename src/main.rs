@@ -63,7 +63,8 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         terminal.draw(|f| {
-            let main_style = Style::default().bg(Color::Reset).fg(Color::Cyan);
+            let main_style = Style::default().bg(Color::Reset).fg(Color::Magenta);
+            let focused_style = main_style.fg(Color::Cyan);
 
             let sizes = Layout::default()
                 .direction(Direction::Horizontal)
@@ -78,11 +79,23 @@ fn main() -> anyhow::Result<()> {
                 .map(|e| ListItem::new(e.file_name().unwrap().to_str().unwrap()))
                 .collect();
 
+            let highlight_base_style = match cursor_state {
+                CursorState::MusicList => focused_style,
+                _ => main_style,
+            };
+
             let block = Block::default().title("Select music").borders(Borders::ALL);
             let listing = List::new(files)
                 .block(block)
-                .style(main_style)
-                .highlight_style(main_style.bg(main_style.fg.unwrap()).fg(Color::Black))
+                .style(match cursor_state {
+                    CursorState::MusicList => focused_style,
+                    _ => main_style,
+                })
+                .highlight_style(
+                    highlight_base_style
+                        .bg(highlight_base_style.fg.unwrap())
+                        .fg(Color::Black),
+                )
                 .highlight_symbol("> ");
 
             let status_block = Block::default()
@@ -103,7 +116,10 @@ fn main() -> anyhow::Result<()> {
             let block = Block::default().title("Volume").borders(Borders::ALL);
             let gauge = Gauge::default()
                 .block(block)
-                .style(main_style)
+                .style(match cursor_state {
+                    CursorState::Volume => focused_style,
+                    _ => main_style,
+                })
                 .gauge_style(main_style.fg(Color::Blue))
                 .ratio(play.volume());
 
