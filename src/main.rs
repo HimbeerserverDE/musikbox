@@ -310,6 +310,16 @@ fn main() -> anyhow::Result<()> {
                             let track = rand::random::<usize>() % files.len();
                             list_state.select(Some(track));
                         }
+                        KeyCode::Char('R') => {
+                            let track = rand::random::<usize>() % files.len();
+                            list_state.select(Some(track));
+
+                            let file_path = &files[track];
+                            let uri = format!("file://{}", file_path.display());
+
+                            play.set_uri(Some(&uri));
+                            play.play();
+                        }
                         KeyCode::Enter => {
                             let track = match list_state.selected() {
                                 Some(i) => i,
