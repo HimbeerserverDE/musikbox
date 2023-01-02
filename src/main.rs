@@ -43,6 +43,11 @@ impl Default for CursorState {
     }
 }
 
+#[derive(Debug, Default)]
+struct AutoplayState {
+    repeat: bool,
+}
+
 fn subsize(area: Rect, i: u16) -> Rect {
     let mut new_area = area;
     new_area.y += i * area.height;
@@ -62,7 +67,9 @@ fn is_paused(play: &Play) -> bool {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+
     let mut cursor_state = CursorState::default();
+    let mut autoplay_state = AutoplayState::default();
 
     gstreamer::init()?;
     enable_raw_mode()?;
@@ -190,6 +197,22 @@ fn main() -> anyhow::Result<()> {
             f.render_widget(control_paragraph, control_size);
         })?;
 
+        let progress_ratio = if let Some(position) = play.position() {
+            if let Some(duration) = play.duration() {
+                position.seconds() as f64 / duration.seconds() as f64
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+
+        if progress_ratio == 1.0 {
+            if autoplay_state.repeat {
+                play.play();
+            }
+        }
+
         if !event::poll(Duration::from_secs(1))? {
             continue;
         }
@@ -288,6 +311,9 @@ fn main() -> anyhow::Result<()> {
                                     ));
                                 }
                             }
+                        }
+                        KeyCode::Char('r') => {
+                            autoplay_state.repeat = !autoplay_state.repeat;
                         }
                         _ => {}
                     },
