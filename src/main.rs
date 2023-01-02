@@ -48,6 +48,7 @@ struct AutoplayState {
     repeat: bool,
     shuffle: bool,
     sequential: bool,
+    repeat_list: bool,
 }
 
 fn subsize(area: Rect, i: u16) -> Rect {
@@ -178,13 +179,20 @@ fn main() -> anyhow::Result<()> {
                 });
 
             let control_buttons = if is_paused(&play) {
-                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ ⏬ ]   [ 🔀 ]\n\n")
+                String::from(
+                    "[ 🔁 ]   [ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ ⏬ ]   [ 🔀 ]\n\n",
+                )
             } else {
-                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ ⏬ ]   [ 🔀 ]\n\n")
+                String::from(
+                    "[ 🔁 ]   [ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ ⏬ ]   [ 🔀 ]\n\n",
+                )
             };
 
             let mut control_indicators = String::new();
 
+            if autoplay_state.repeat_list {
+                control_indicators += " 🔁 ";
+            }
             if autoplay_state.repeat {
                 control_indicators += " 🔂 ";
             }
@@ -225,13 +233,17 @@ fn main() -> anyhow::Result<()> {
             if autoplay_state.repeat {
                 play.play();
             } else if autoplay_state.sequential {
-                let track = files
+                let mut track = files
                     .iter()
                     .enumerate()
                     .find(|(_, file)| format!("file://{}", file.display()) == play.uri().unwrap())
                     .unwrap()
                     .0
                     + 1;
+
+                if track >= files.len() && autoplay_state.repeat_list {
+                    track = 0
+                }
 
                 if track < files.len() {
                     let file_path = &files[track];
@@ -358,6 +370,9 @@ fn main() -> anyhow::Result<()> {
                         }
                         KeyCode::Char('l') => {
                             autoplay_state.sequential = !autoplay_state.sequential;
+                        }
+                        KeyCode::Char('i') => {
+                            autoplay_state.repeat_list = !autoplay_state.repeat_list;
                         }
                         _ => {}
                     },
