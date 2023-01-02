@@ -169,9 +169,9 @@ fn main() -> anyhow::Result<()> {
                 });
 
             let control_buttons = if is_paused(&play) {
-                "[ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]"
+                "[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]"
             } else {
-                "[ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]"
+                "[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]"
             };
 
             let block = Block::default().borders(Borders::ALL);
