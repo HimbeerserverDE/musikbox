@@ -176,13 +176,19 @@ fn main() -> anyhow::Result<()> {
                 });
 
             let control_buttons = if is_paused(&play) {
-                "[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]"
+                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]\n\n")
             } else {
-                "[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]"
+                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]\n\n")
             };
 
+            let mut control_indicators = String::new();
+
+            if autoplay_state.repeat {
+                control_indicators += " 🔂 ";
+            }
+
             let block = Block::default().borders(Borders::ALL);
-            let control_paragraph = Paragraph::new(control_buttons)
+            let control_paragraph = Paragraph::new(control_buttons + &control_indicators)
                 .block(block)
                 .alignment(Alignment::Center)
                 .style(match cursor_state {
