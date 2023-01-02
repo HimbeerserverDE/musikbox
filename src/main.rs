@@ -21,6 +21,9 @@ struct Args {
     /// Play file on startup.
     #[arg(short = 'p', long = "play")]
     play: Option<String>,
+    /// Exit when there are no songs left to play. Useful in scripts.
+    #[arg(short = 'e', long = "no-remain")]
+    no_remain: bool,
 }
 
 #[derive(Debug)]
@@ -270,6 +273,8 @@ fn main() -> anyhow::Result<()> {
 
                 play.set_uri(Some(&uri));
                 play.play();
+            } else if args.no_remain {
+                break;
             }
         }
 
