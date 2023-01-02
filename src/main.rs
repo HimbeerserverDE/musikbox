@@ -5,7 +5,7 @@ use gstreamer_play::{Play, PlayVideoRenderer};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
-use tui::layout::{Constraint, Direction, Layout};
+use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, Gauge, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
@@ -37,6 +37,13 @@ impl Default for CursorState {
     fn default() -> Self {
         Self::MusicList
     }
+}
+
+fn subsize(area: Rect, i: u16) -> Rect {
+    let mut new_area = area;
+    new_area.y += i * area.height;
+
+    new_area
 }
 
 fn main() -> anyhow::Result<()> {
@@ -109,12 +116,13 @@ fn main() -> anyhow::Result<()> {
                     Constraint::Min(0),
                 ])
                 .margin(1)
-                .split(status_size);
+                .split(status_size)[0];
 
-            let volume_size = status_sizes[0];
+            let volume_size = subsize(status_sizes, 0);
+            let progress_size = subsize(status_sizes, 1);
 
             let block = Block::default().title("Volume").borders(Borders::ALL);
-            let gauge = Gauge::default()
+            let volume_gauge = Gauge::default()
                 .block(block)
                 .style(match cursor_state {
                     CursorState::Volume => focused_style,
@@ -123,9 +131,25 @@ fn main() -> anyhow::Result<()> {
                 .gauge_style(main_style.fg(Color::Blue))
                 .ratio(play.volume());
 
+            let block = Block::default().borders(Borders::ALL);
+            let progress_gauge = Gauge::default()
+                .block(block)
+                .style(main_style)
+                .gauge_style(main_style.fg(Color::Blue))
+                .ratio(if let Some(position) = play.position() {
+                    if let Some(duration) = play.duration() {
+                        position.seconds() as f64 / duration.seconds() as f64
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                });
+
             f.render_stateful_widget(listing, listing_size, &mut list_state);
             f.render_widget(status_block, status_size);
-            f.render_widget(gauge, volume_size);
+            f.render_widget(volume_gauge, volume_size);
+            f.render_widget(progress_gauge, progress_size);
         })?;
 
         if let Event::Key(key) = event::read()? {
