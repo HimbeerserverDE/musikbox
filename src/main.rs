@@ -1,6 +1,7 @@
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use gstreamer::ClockTime;
 use gstreamer_play::{Play, PlayVideoRenderer};
 use std::fs;
 use std::io;
@@ -222,7 +223,25 @@ fn main() -> anyhow::Result<()> {
                         _ => {}
                     },
                     CursorState::Control => match key.code {
-                        _ => todo!(),
+                        KeyCode::Left => {
+                            if let Some(position) = play.position() {
+                                play.seek(ClockTime::from_seconds(
+                                    0_u64.max(position.seconds().saturating_sub(1)),
+                                ));
+                            }
+                        }
+                        KeyCode::Right => {
+                            if let Some(position) = play.position() {
+                                if let Some(duration) = play.duration() {
+                                    play.seek(ClockTime::from_seconds(
+                                        duration
+                                            .seconds()
+                                            .min(position.seconds().saturating_add(1)),
+                                    ));
+                                }
+                            }
+                        }
+                        _ => {}
                     },
                 },
             }
