@@ -5,6 +5,7 @@ use gstreamer_play::{Play, PlayVideoRenderer};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
+use std::time::Duration;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, Gauge, List, ListItem, ListState};
@@ -151,6 +152,10 @@ fn main() -> anyhow::Result<()> {
             f.render_widget(volume_gauge, volume_size);
             f.render_widget(progress_gauge, progress_size);
         })?;
+
+        if !event::poll(Duration::from_secs(1))? {
+            continue;
+        }
 
         if let Event::Key(key) = event::read()? {
             match key.code {
