@@ -6,9 +6,9 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 use std::time::Duration;
-use tui::layout::{Constraint, Direction, Layout, Rect};
+use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
-use tui::widgets::{Block, Borders, Gauge, List, ListItem, ListState};
+use tui::widgets::{Block, Borders, Gauge, List, ListItem, ListState, Paragraph};
 use tui::{backend::CrosstermBackend, Terminal};
 
 #[derive(Debug, Parser)]
@@ -23,13 +23,15 @@ struct Args {
 enum CursorState {
     MusicList,
     Volume,
+    Control,
 }
 
 impl CursorState {
     fn overflowing_next(&mut self) {
         *self = match self {
             Self::MusicList => Self::Volume,
-            Self::Volume => Self::MusicList,
+            Self::Volume => Self::Control,
+            Self::Control => Self::MusicList,
         };
     }
 }
@@ -121,6 +123,7 @@ fn main() -> anyhow::Result<()> {
 
             let volume_size = subsize(status_sizes, 0);
             let progress_size = subsize(status_sizes, 1);
+            let control_size = subsize(status_sizes, 2);
 
             let block = Block::default().title("Volume").borders(Borders::ALL);
             let volume_gauge = Gauge::default()
@@ -147,10 +150,20 @@ fn main() -> anyhow::Result<()> {
                     0.0
                 });
 
+            let block = Block::default().borders(Borders::ALL);
+            let control_paragraph = Paragraph::new("[ ⏮ ]   [ ◀ ]   [ ⏯ ]   [ ▶ ]   [ ⏭ ]")
+                .block(block)
+                .alignment(Alignment::Center)
+                .style(match cursor_state {
+                    CursorState::Control => focused_style,
+                    _ => main_style,
+                });
+
             f.render_stateful_widget(listing, listing_size, &mut list_state);
             f.render_widget(status_block, status_size);
             f.render_widget(volume_gauge, volume_size);
             f.render_widget(progress_gauge, progress_size);
+            f.render_widget(control_paragraph, control_size);
         })?;
 
         if !event::poll(Duration::from_secs(1))? {
@@ -207,6 +220,9 @@ fn main() -> anyhow::Result<()> {
                         KeyCode::Down => play.set_volume(0.0_f64.max(play.volume() - 0.05)),
                         KeyCode::Up => play.set_volume(1.0_f64.min(play.volume() + 0.05)),
                         _ => {}
+                    },
+                    CursorState::Control => match key.code {
+                        _ => todo!(),
                     },
                 },
             }
