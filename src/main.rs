@@ -50,6 +50,16 @@ fn subsize(area: Rect, i: u16) -> Rect {
     new_area
 }
 
+fn is_paused(play: &Play) -> bool {
+    match play.position() {
+        Some(position) => match play.position() {
+            Some(new_pos) => position.nseconds() == new_pos.nseconds(),
+            None => true,
+        },
+        None => true,
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let mut cursor_state = CursorState::default();
@@ -257,6 +267,13 @@ fn main() -> anyhow::Result<()> {
                                             .min(position.seconds().saturating_add(15)),
                                     ));
                                 }
+                            }
+                        }
+                        KeyCode::Char(' ') => {
+                            if is_paused(&play) {
+                                play.play();
+                            } else {
+                                play.pause();
                             }
                         }
                         _ => {}
