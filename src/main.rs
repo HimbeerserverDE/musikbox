@@ -7,11 +7,15 @@ use std::fmt;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
+use std::sync::Once;
+use std::thread;
 use std::time::Duration;
 use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
 use tui::widgets::{Block, Borders, Gauge, List, ListItem, ListState, Paragraph};
 use tui::{backend::CrosstermBackend, Terminal};
+
+static VOLUME: Once = Once::new();
 
 #[derive(Debug, Parser)]
 #[command(author = "Himbeer", version = "v0.1.0", about = "A custom music player for the command line, written in Rust.", long_about = None)]
@@ -28,6 +32,9 @@ struct Args {
     /// Play random file on startup. Overridden by --play.
     #[arg(short = 'r', long = "random")]
     random: bool,
+    /// Initial volume (float). By default the last selected volume is restored when a file is played.
+    #[arg(short = 'v', long = "volume")]
+    volume: Option<f64>,
 }
 
 #[derive(Debug)]
@@ -78,11 +85,19 @@ fn is_paused(play: &Play) -> bool {
     }
 }
 
-fn play_path<T: fmt::Display>(play: &Play, path: T) {
+fn play_path<T: fmt::Display>(play: &Play, path: T, init_volume: Option<f64>) {
     let uri = format!("file://{}", path);
 
     play.set_uri(Some(&uri));
     play.play();
+
+    if let Some(init_volume) = init_volume {
+        thread::sleep(Duration::from_millis(500));
+
+        VOLUME.call_once(|| {
+            play.set_volume(init_volume);
+        });
+    }
 }
 
 /// Get the progress ratio of the current song.
@@ -124,10 +139,10 @@ fn main() -> anyhow::Result<()> {
     list_state.select(Some(0));
 
     if let Some(initial) = args.play {
-        play_path(&play, initial);
+        play_path(&play, initial, args.volume);
     } else if args.random {
         let track = rand::random::<usize>() % files.len();
-        play_path(&play, files[track].display());
+        play_path(&play, files[track].display(), args.volume);
     }
 
     loop {
@@ -266,11 +281,11 @@ fn main() -> anyhow::Result<()> {
                 }
 
                 if track < files.len() {
-                    play_path(&play, files[track].display());
+                    play_path(&play, files[track].display(), args.volume);
                 }
             } else if autoplay_state.shuffle {
                 let track = rand::random::<usize>() & files.len();
-                play_path(&play, files[track].display());
+                play_path(&play, files[track].display(), args.volume);
             } else if args.no_remain {
                 break;
             }
@@ -317,7 +332,7 @@ fn main() -> anyhow::Result<()> {
                             let track = rand::random::<usize>() % files.len();
                             list_state.select(Some(track));
 
-                            play_path(&play, files[track].display());
+                            play_path(&play, files[track].display(), args.volume);
                         }
                         KeyCode::Enter => {
                             let track = match list_state.selected() {
@@ -327,7 +342,7 @@ fn main() -> anyhow::Result<()> {
                                 }
                             };
 
-                            play_path(&play, files[track].display());
+                            play_path(&play, files[track].display(), args.volume);
                         }
                         _ => {}
                     },
