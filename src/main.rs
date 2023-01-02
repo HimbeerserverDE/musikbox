@@ -18,6 +18,9 @@ struct Args {
     /// Playlist directory. Defaults to current directory.
     #[arg(short = 'd', long = "dir")]
     dir: Option<String>,
+    /// Play file on startup.
+    #[arg(short = 'p', long = "play")]
+    play: Option<String>,
 }
 
 #[derive(Debug)]
@@ -91,6 +94,13 @@ fn main() -> anyhow::Result<()> {
 
     let mut list_state = ListState::default();
     list_state.select(Some(0));
+
+    if let Some(initial) = args.play {
+        let uri = format!("file://{}", initial);
+
+        play.set_uri(Some(&uri));
+        play.play();
+    }
 
     loop {
         terminal.draw(|f| {
