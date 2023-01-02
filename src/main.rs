@@ -46,6 +46,7 @@ impl Default for CursorState {
 #[derive(Debug, Default)]
 struct AutoplayState {
     repeat: bool,
+    shuffle: bool,
 }
 
 fn subsize(area: Rect, i: u16) -> Rect {
@@ -186,6 +187,9 @@ fn main() -> anyhow::Result<()> {
             if autoplay_state.repeat {
                 control_indicators += " 🔂 ";
             }
+            if autoplay_state.shuffle {
+                control_indicators += " 🔀 ";
+            }
 
             let block = Block::default().borders(Borders::ALL);
             let control_paragraph = Paragraph::new(control_buttons + &control_indicators)
@@ -215,6 +219,14 @@ fn main() -> anyhow::Result<()> {
 
         if progress_ratio == 1.0 {
             if autoplay_state.repeat {
+                play.play();
+            } else if autoplay_state.shuffle {
+                let track = rand::random::<usize>() & files.len();
+
+                let file_path = &files[track];
+                let uri = format!("file://{}", file_path.display());
+
+                play.set_uri(Some(&uri));
                 play.play();
             }
         }
@@ -320,6 +332,9 @@ fn main() -> anyhow::Result<()> {
                         }
                         KeyCode::Char('r') => {
                             autoplay_state.repeat = !autoplay_state.repeat;
+                        }
+                        KeyCode::Char('s') => {
+                            autoplay_state.shuffle = !autoplay_state.shuffle;
                         }
                         _ => {}
                     },
