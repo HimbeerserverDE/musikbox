@@ -45,10 +45,10 @@ impl Default for CursorState {
 
 #[derive(Debug, Default)]
 struct AutoplayState {
-    repeat: bool,
-    shuffle: bool,
-    sequential: bool,
     repeat_list: bool,
+    repeat: bool,
+    sequential: bool,
+    shuffle: bool,
 }
 
 fn subsize(area: Rect, i: u16) -> Rect {
