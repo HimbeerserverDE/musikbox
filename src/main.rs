@@ -3,6 +3,7 @@ use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use gstreamer::ClockTime;
 use gstreamer_play::{Play, PlayVideoRenderer};
+use std::fmt;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -74,6 +75,13 @@ fn is_paused(play: &Play) -> bool {
     }
 }
 
+fn play_path<T: fmt::Display>(play: &Play, path: T) {
+    let uri = format!("file://{}", path);
+
+    play.set_uri(Some(&uri));
+    play.play();
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
@@ -99,10 +107,7 @@ fn main() -> anyhow::Result<()> {
     list_state.select(Some(0));
 
     if let Some(initial) = args.play {
-        let uri = format!("file://{}", initial);
-
-        play.set_uri(Some(&uri));
-        play.play();
+        play_path(&play, initial);
     }
 
     loop {
@@ -259,20 +264,11 @@ fn main() -> anyhow::Result<()> {
                 }
 
                 if track < files.len() {
-                    let file_path = &files[track];
-                    let uri = format!("file://{}", file_path.display());
-
-                    play.set_uri(Some(&uri));
-                    play.play();
+                    play_path(&play, files[track].display());
                 }
             } else if autoplay_state.shuffle {
                 let track = rand::random::<usize>() & files.len();
-
-                let file_path = &files[track];
-                let uri = format!("file://{}", file_path.display());
-
-                play.set_uri(Some(&uri));
-                play.play();
+                play_path(&play, files[track].display());
             } else if args.no_remain {
                 break;
             }
@@ -319,11 +315,7 @@ fn main() -> anyhow::Result<()> {
                             let track = rand::random::<usize>() % files.len();
                             list_state.select(Some(track));
 
-                            let file_path = &files[track];
-                            let uri = format!("file://{}", file_path.display());
-
-                            play.set_uri(Some(&uri));
-                            play.play();
+                            play_path(&play, files[track].display());
                         }
                         KeyCode::Enter => {
                             let track = match list_state.selected() {
@@ -333,11 +325,7 @@ fn main() -> anyhow::Result<()> {
                                 }
                             };
 
-                            let file_path = &files[track];
-                            let uri = format!("file://{}", file_path.display());
-
-                            play.set_uri(Some(&uri));
-                            play.play();
+                            play_path(&play, files[track].display());
                         }
                         _ => {}
                     },
