@@ -204,7 +204,7 @@ impl Instance {
                 let status_sizes = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([
-                        Constraint::Length(status_size.height / 10),
+                        Constraint::Length(status_size.height / 8),
                         Constraint::Min(0),
                     ])
                     .margin(1)
