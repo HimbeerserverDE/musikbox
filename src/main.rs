@@ -195,6 +195,13 @@ fn main() -> anyhow::Result<()> {
                 KeyCode::Tab => {
                     cursor_state.overflowing_next();
                 }
+                KeyCode::Char(' ') => {
+                    if is_paused(&play) {
+                        play.play();
+                    } else {
+                        play.pause();
+                    }
+                }
                 _ => match cursor_state {
                     CursorState::MusicList => match key.code {
                         KeyCode::Down => match list_state.selected() {
@@ -273,13 +280,6 @@ fn main() -> anyhow::Result<()> {
                                             .min(position.seconds().saturating_add(15)),
                                     ));
                                 }
-                            }
-                        }
-                        KeyCode::Char(' ') => {
-                            if is_paused(&play) {
-                                play.play();
-                            } else {
-                                play.pause();
                             }
                         }
                         _ => {}
