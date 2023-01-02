@@ -41,6 +41,8 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         terminal.draw(|f| {
+            let main_style = Style::default().bg(Color::Reset).fg(Color::Cyan);
+
             let sizes = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints([Constraint::Length(f.size().width / 2), Constraint::Min(0)])
@@ -57,14 +59,14 @@ fn main() -> anyhow::Result<()> {
             let block = Block::default().title("Select music").borders(Borders::ALL);
             let listing = List::new(files)
                 .block(block)
-                .style(Style::default().bg(Color::Reset).fg(Color::Green))
-                .highlight_style(Style::default().bg(Color::Green).fg(Color::Black))
+                .style(main_style)
+                .highlight_style(main_style.bg(main_style.fg.unwrap()).fg(Color::Black))
                 .highlight_symbol("> ");
 
             let status_block = Block::default()
                 .title("Now playing")
                 .borders(Borders::ALL)
-                .style(Style::default().bg(Color::Reset).fg(Color::Green));
+                .style(main_style);
             let status_sizes = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
@@ -79,8 +81,8 @@ fn main() -> anyhow::Result<()> {
             let block = Block::default().title("Volume").borders(Borders::ALL);
             let gauge = Gauge::default()
                 .block(block)
-                .style(Style::default().bg(Color::Reset).fg(Color::Green))
-                .gauge_style(Style::default().bg(Color::Reset).fg(Color::Blue))
+                .style(main_style)
+                .gauge_style(main_style.fg(Color::Blue))
                 .ratio(play.volume());
 
             f.render_stateful_widget(listing, listing_size, &mut list_state);
