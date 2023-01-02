@@ -5,8 +5,9 @@ use gstreamer_play::{Play, PlayVideoRenderer};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
+use tui::layout::{Constraint, Direction, Layout};
 use tui::style::{Color, Style};
-use tui::widgets::{Block, Borders, List, ListItem, ListState};
+use tui::widgets::{Block, Borders, Gauge, List, ListItem, ListState};
 use tui::{backend::CrosstermBackend, Terminal};
 
 #[derive(Debug, Parser)]
@@ -40,7 +41,13 @@ fn main() -> anyhow::Result<()> {
 
     loop {
         terminal.draw(|f| {
-            let size = f.size();
+            let sizes = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Length(f.size().width / 2), Constraint::Min(0)])
+                .split(f.size());
+
+            let listing_size = sizes[0];
+            let status_size = sizes[1];
 
             let files: Vec<ListItem> = files
                 .iter()
@@ -54,7 +61,31 @@ fn main() -> anyhow::Result<()> {
                 .highlight_style(Style::default().bg(Color::Green).fg(Color::Black))
                 .highlight_symbol("> ");
 
-            f.render_stateful_widget(listing, size, &mut list_state);
+            let status_block = Block::default()
+                .title("Now playing")
+                .borders(Borders::ALL)
+                .style(Style::default().bg(Color::Reset).fg(Color::Green));
+            let status_sizes = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(status_size.height / 10),
+                    Constraint::Min(0),
+                ])
+                .margin(1)
+                .split(status_size);
+
+            let volume_size = status_sizes[0];
+
+            let block = Block::default().title("Volume").borders(Borders::ALL);
+            let gauge = Gauge::default()
+                .block(block)
+                .style(Style::default().bg(Color::Reset).fg(Color::Green))
+                .gauge_style(Style::default().bg(Color::Reset).fg(Color::Blue))
+                .ratio(play.volume());
+
+            f.render_stateful_widget(listing, listing_size, &mut list_state);
+            f.render_widget(status_block, status_size);
+            f.render_widget(gauge, volume_size);
         })?;
 
         if let Event::Key(key) = event::read()? {
