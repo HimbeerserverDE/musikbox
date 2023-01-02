@@ -119,8 +119,15 @@ fn main() -> anyhow::Result<()> {
                 )
                 .highlight_symbol("> ");
 
+            let status_title = match play.uri() {
+                Some(uri) => {
+                    String::from("Now playing: ") + uri.as_str().split('/').next_back().unwrap()
+                }
+                None => String::from("Idle"),
+            };
+
             let status_block = Block::default()
-                .title("Now playing")
+                .title(status_title)
                 .borders(Borders::ALL)
                 .style(main_style);
             let status_sizes = Layout::default()
