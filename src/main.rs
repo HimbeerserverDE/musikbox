@@ -161,8 +161,14 @@ fn main() -> anyhow::Result<()> {
                     0.0
                 });
 
+            let control_buttons = if is_paused(&play) {
+                "[ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]"
+            } else {
+                "[ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]"
+            };
+
             let block = Block::default().borders(Borders::ALL);
-            let control_paragraph = Paragraph::new("[ ⏮ ]   [ ◀ ]   [ ⏯ ]   [ ▶ ]   [ ⏭ ]")
+            let control_paragraph = Paragraph::new(control_buttons)
                 .block(block)
                 .alignment(Alignment::Center)
                 .style(match cursor_state {
