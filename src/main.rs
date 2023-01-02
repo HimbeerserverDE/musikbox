@@ -47,6 +47,7 @@ impl Default for CursorState {
 struct AutoplayState {
     repeat: bool,
     shuffle: bool,
+    sequential: bool,
 }
 
 fn subsize(area: Rect, i: u16) -> Rect {
@@ -177,15 +178,18 @@ fn main() -> anyhow::Result<()> {
                 });
 
             let control_buttons = if is_paused(&play) {
-                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]\n\n")
+                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ▶ ]   [ ▶ ]   [ ⏭ ]   [ ⏬ ]   [ 🔀 ]\n\n")
             } else {
-                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ 🔀 ]\n\n")
+                String::from("[ 🔂 ]   [ ⏮ ]   [ ◀ ]   [ ⏸ ]   [ ▶ ]   [ ⏭ ]   [ ⏬ ]   [ 🔀 ]\n\n")
             };
 
             let mut control_indicators = String::new();
 
             if autoplay_state.repeat {
                 control_indicators += " 🔂 ";
+            }
+            if autoplay_state.sequential {
+                control_indicators += " ⏬ ";
             }
             if autoplay_state.shuffle {
                 control_indicators += " 🔀 ";
@@ -220,6 +224,22 @@ fn main() -> anyhow::Result<()> {
         if progress_ratio == 1.0 {
             if autoplay_state.repeat {
                 play.play();
+            } else if autoplay_state.sequential {
+                let track = files
+                    .iter()
+                    .enumerate()
+                    .find(|(_, file)| format!("file://{}", file.display()) == play.uri().unwrap())
+                    .unwrap()
+                    .0
+                    + 1;
+
+                if track < files.len() {
+                    let file_path = &files[track];
+                    let uri = format!("file://{}", file_path.display());
+
+                    play.set_uri(Some(&uri));
+                    play.play();
+                }
             } else if autoplay_state.shuffle {
                 let track = rand::random::<usize>() & files.len();
 
@@ -335,6 +355,9 @@ fn main() -> anyhow::Result<()> {
                         }
                         KeyCode::Char('s') => {
                             autoplay_state.shuffle = !autoplay_state.shuffle;
+                        }
+                        KeyCode::Char('l') => {
+                            autoplay_state.sequential = !autoplay_state.sequential;
                         }
                         _ => {}
                     },
