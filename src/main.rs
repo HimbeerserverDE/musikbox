@@ -241,6 +241,24 @@ fn main() -> anyhow::Result<()> {
                                 }
                             }
                         }
+                        KeyCode::Down => {
+                            if let Some(position) = play.position() {
+                                play.seek(ClockTime::from_seconds(
+                                    0_u64.max(position.seconds().saturating_sub(15)),
+                                ));
+                            }
+                        }
+                        KeyCode::Up => {
+                            if let Some(position) = play.position() {
+                                if let Some(duration) = play.duration() {
+                                    play.seek(ClockTime::from_seconds(
+                                        duration
+                                            .seconds()
+                                            .min(position.seconds().saturating_add(15)),
+                                    ));
+                                }
+                            }
+                        }
                         _ => {}
                     },
                 },
