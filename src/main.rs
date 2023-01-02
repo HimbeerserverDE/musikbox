@@ -295,7 +295,7 @@ impl Instance {
                         self.play_path(self.files[track].display());
                     }
                 } else if self.autoplay_state.shuffle {
-                    let track = rand::random::<usize>() & self.files.len();
+                    let track = rand::random::<usize>() % self.files.len();
                     self.play_path(self.files[track].display());
                 } else if self.args.no_remain {
                     break;
