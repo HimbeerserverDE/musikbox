@@ -159,6 +159,8 @@ fn main() -> anyhow::Result<()> {
                         KeyCode::Right => play.set_volume(1.0_f64.min(play.volume() + 0.01)),
                         KeyCode::Home => play.set_volume(0.0),
                         KeyCode::End => play.set_volume(1.0),
+                        KeyCode::Down => play.set_volume(0.0_f64.max(play.volume() - 0.05)),
+                        KeyCode::Up => play.set_volume(1.0_f64.min(play.volume() + 0.05)),
                         _ => {}
                     },
                 },
