@@ -157,6 +157,8 @@ fn main() -> anyhow::Result<()> {
                     CursorState::Volume => match key.code {
                         KeyCode::Left => play.set_volume(0.0_f64.max(play.volume() - 0.01)),
                         KeyCode::Right => play.set_volume(1.0_f64.min(play.volume() + 0.01)),
+                        KeyCode::Home => play.set_volume(0.0),
+                        KeyCode::End => play.set_volume(1.0),
                         _ => {}
                     },
                 },
