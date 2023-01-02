@@ -18,8 +18,30 @@ struct Args {
     dir: Option<String>,
 }
 
+#[derive(Debug)]
+enum CursorState {
+    MusicList,
+    Volume,
+}
+
+impl CursorState {
+    fn overflowing_next(&mut self) {
+        *self = match self {
+            Self::MusicList => Self::Volume,
+            Self::Volume => Self::MusicList,
+        };
+    }
+}
+
+impl Default for CursorState {
+    fn default() -> Self {
+        Self::MusicList
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
+    let mut cursor_state = CursorState::default();
 
     gstreamer::init()?;
     enable_raw_mode()?;
@@ -95,37 +117,49 @@ fn main() -> anyhow::Result<()> {
                 KeyCode::Esc | KeyCode::Char('q') => {
                     break;
                 }
-                KeyCode::Down => match list_state.selected() {
-                    Some(i) => list_state.select(Some((i + 1) % files.len())),
-                    None => list_state.select(Some(0)),
-                },
-                KeyCode::Up => match list_state.selected() {
-                    Some(i) => list_state.select(Some(if i > 0 {
-                        (i - 1) % files.len()
-                    } else {
-                        files.len() - 1
-                    })),
-                    None => list_state.select(Some(files.len() - 1)),
-                },
-                KeyCode::Char('r') => {
-                    let track = rand::random::<usize>() % files.len();
-                    list_state.select(Some(track));
+                KeyCode::Tab => {
+                    cursor_state.overflowing_next();
                 }
-                KeyCode::Enter => {
-                    let track = match list_state.selected() {
-                        Some(i) => i,
-                        None => {
-                            continue;
+                _ => match cursor_state {
+                    CursorState::MusicList => match key.code {
+                        KeyCode::Down => match list_state.selected() {
+                            Some(i) => list_state.select(Some((i + 1) % files.len())),
+                            None => list_state.select(Some(0)),
+                        },
+                        KeyCode::Up => match list_state.selected() {
+                            Some(i) => list_state.select(Some(if i > 0 {
+                                (i - 1) % files.len()
+                            } else {
+                                files.len() - 1
+                            })),
+                            None => list_state.select(Some(files.len() - 1)),
+                        },
+                        KeyCode::Char('r') => {
+                            let track = rand::random::<usize>() % files.len();
+                            list_state.select(Some(track));
                         }
-                    };
+                        KeyCode::Enter => {
+                            let track = match list_state.selected() {
+                                Some(i) => i,
+                                None => {
+                                    continue;
+                                }
+                            };
 
-                    let file_path = &files[track];
-                    let uri = format!("file://{}", file_path.display());
+                            let file_path = &files[track];
+                            let uri = format!("file://{}", file_path.display());
 
-                    play.set_uri(Some(&uri));
-                    play.play();
-                }
-                _ => {}
+                            play.set_uri(Some(&uri));
+                            play.play();
+                        }
+                        _ => {}
+                    },
+                    CursorState::Volume => match key.code {
+                        KeyCode::Left => play.set_volume(0.0_f64.max(play.volume() - 0.01)),
+                        KeyCode::Right => play.set_volume(1.0_f64.min(play.volume() + 0.01)),
+                        _ => {}
+                    },
+                },
             }
         }
     }
