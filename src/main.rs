@@ -224,10 +224,26 @@ impl Instance {
                     .gauge_style(main_style.fg(Color::Blue))
                     .ratio(self.play.volume());
 
+                let progress_label = match self.play.position() {
+                    Some(position) => match self.play.duration() {
+                        Some(duration) => {
+                            let pos_m = position.minutes();
+                            let pos_s = position.seconds() - pos_m * 60;
+                            let total_m = duration.minutes();
+                            let total_s = duration.seconds() - total_m * 60;
+
+                            format!("{}:{:0>2} / {}:{:0>2}", pos_m, pos_s, total_m, total_s)
+                        }
+                        None => String::from("-:-- / -:--"),
+                    }
+                    None => String::from("-:-- / -:--"),
+                };
+
                 let block = Block::default().borders(Borders::ALL);
                 let progress_gauge = Gauge::default()
                     .block(block)
                     .style(main_style)
+                    .label(progress_label)
                     .gauge_style(main_style.fg(Color::Blue))
                     .ratio(self.current_progress());
 
