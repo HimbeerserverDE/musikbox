@@ -46,6 +46,9 @@ struct Args {
     /// Play the list (directory) randomly and indefinitely. Can be toggled from the TUI.
     #[arg(short = 's', long = "shuffle")]
     shuffle: bool,
+    /// Don't create a directory listing.
+    #[arg(short = 'n', long = "no-listing")]
+    no_listing: bool,
 }
 
 #[derive(Debug)]
@@ -144,10 +147,13 @@ impl Instance {
             volume_once: Once::new(),
         };
 
-        instance.files = fs::read_dir(instance.dir())?
-            .map(|e| e.unwrap().path())
-            .collect();
-        instance.files.sort();
+        if !instance.args.no_listing {
+            instance.files = fs::read_dir(instance.dir())?
+                .map(|e| e.unwrap().path())
+                .collect();
+            instance.files.sort();
+        }
+
         instance.list_state.select(Some(0));
 
         instance.autoplay_state.repeat_list = instance.args.repeat_list;
