@@ -364,15 +364,23 @@ impl Instance {
                     _ => match self.cursor_state {
                         CursorState::MusicList => match key.code {
                             KeyCode::Down => match self.list_state.selected() {
-                                Some(i) => self.list_state.select(Some((i + 1) % self.files.len())),
+                                Some(i) => {
+                                    if self.files.len() > 1 {
+                                        self.list_state.select(Some((i + 1) % self.files.len()))
+                                    }
+                                }
                                 None => self.list_state.select(Some(0)),
                             },
                             KeyCode::Up => match self.list_state.selected() {
-                                Some(i) => self.list_state.select(Some(if i > 0 {
-                                    (i - 1) % self.files.len()
-                                } else {
-                                    self.files.len() - 1
-                                })),
+                                Some(i) => {
+                                    if self.files.len() > 1 {
+                                        self.list_state.select(Some(if i > 0 {
+                                            (i - 1) % self.files.len()
+                                        } else {
+                                            self.files.len() - 1
+                                        }))
+                                    }
+                                }
                                 None => self.list_state.select(Some(self.files.len() - 1)),
                             },
                             KeyCode::Char('r') => {
