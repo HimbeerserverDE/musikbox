@@ -34,6 +34,9 @@ struct Args {
     /// By default the last selected volume is restored when a file is played.
     #[arg(short = 'v', long = "volume")]
     volume: Option<f64>,
+    /// Repeat the current song indefinitely. Can be toggled from the TUI.
+    #[arg(short = 'R', long = "repeat")]
+    repeat: bool,
 }
 
 #[derive(Debug)]
@@ -137,6 +140,8 @@ impl Instance {
             .collect();
         instance.files.sort();
         instance.list_state.select(Some(0));
+
+        instance.autoplay_state.repeat = instance.args.repeat;
 
         Ok(instance)
     }
