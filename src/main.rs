@@ -40,6 +40,9 @@ struct Args {
     /// Repeat the current song indefinitely. Can be toggled from the TUI.
     #[arg(short = 'R', long = "repeat")]
     repeat: bool,
+    /// Play the list (directory) sequentially. Can be toggled from the TUI.
+    #[arg(short = 'l', long = "sequential")]
+    sequential: bool,
 }
 
 #[derive(Debug)]
@@ -146,6 +149,7 @@ impl Instance {
 
         instance.autoplay_state.repeat_list = instance.args.repeat_list;
         instance.autoplay_state.repeat = instance.args.repeat;
+        instance.autoplay_state.sequential = instance.args.sequential;
 
         Ok(instance)
     }
