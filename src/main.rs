@@ -30,7 +30,8 @@ struct Args {
     /// Play random file on startup. Overridden by --play.
     #[arg(short = 'r', long = "random")]
     random: bool,
-    /// Initial volume (float). By default the last selected volume is restored when a file is played.
+    /// Initial volume (float from 0.0 to 1.0).
+    /// By default the last selected volume is restored when a file is played.
     #[arg(short = 'v', long = "volume")]
     volume: Option<f64>,
 }
