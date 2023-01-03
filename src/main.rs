@@ -451,6 +451,14 @@ impl Instance {
                                     }
                                 }
                             }
+                            KeyCode::Home => {
+                                self.play.seek(ClockTime::ZERO);
+                            }
+                            KeyCode::End => {
+                                if let Some(duration) = self.play.duration() {
+                                    self.play.seek(duration);
+                                }
+                            }
                             KeyCode::Char('r') => {
                                 self.autoplay_state.repeat = !self.autoplay_state.repeat;
                             }
