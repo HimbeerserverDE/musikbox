@@ -507,7 +507,11 @@ impl Instance {
                                     if let Some(fmatch) =
                                         self.files.iter().enumerate().find(|(_, file)| {
                                             **file != self.files[selected]
-                                                && file.to_str().unwrap().contains(&self.search)
+                                                && file
+                                                    .to_str()
+                                                    .unwrap()
+                                                    .to_lowercase()
+                                                    .contains(&self.search.to_lowercase())
                                         })
                                     {
                                         self.list_state.select(Some(fmatch.0));
