@@ -56,6 +56,7 @@ enum CursorState {
     MusicList,
     Volume,
     Control,
+    Search,
 }
 
 impl CursorState {
@@ -63,7 +64,8 @@ impl CursorState {
         *self = match self {
             Self::MusicList => Self::Volume,
             Self::Volume => Self::Control,
-            Self::Control => Self::MusicList,
+            Self::Control => Self::Search,
+            Self::Search => Self::MusicList,
         };
     }
 }
@@ -89,6 +91,7 @@ struct Instance {
     play: Play,
     files: Vec<PathBuf>,
     list_state: ListState,
+    search: String,
     volume_once: Once,
 }
 
@@ -144,6 +147,7 @@ impl Instance {
             play: Play::new(PlayVideoRenderer::NONE),
             files: Vec::new(),
             list_state: ListState::default(),
+            search: String::new(),
             volume_once: Once::new(),
         };
 
@@ -237,6 +241,7 @@ impl Instance {
                 let volume_size = subsize(status_sizes, 0);
                 let progress_size = subsize(status_sizes, 1);
                 let control_size = subsize(status_sizes, 2);
+                let search_size = subsize(status_sizes, 3);
 
                 let block = Block::default().title("Volume").borders(Borders::ALL);
                 let volume_gauge = Gauge::default()
@@ -305,11 +310,21 @@ impl Instance {
                         _ => main_style,
                     });
 
+                let block = Block::default().borders(Borders::ALL);
+                let search_paragraph = Paragraph::new(format!("Search: {}", self.search))
+                    .block(block)
+                    .alignment(Alignment::Left)
+                    .style(match self.cursor_state {
+                        CursorState::Search => focused_style,
+                        _ => main_style,
+                    });
+
                 f.render_stateful_widget(listing, listing_size, &mut self.list_state);
                 f.render_widget(status_block, status_size);
                 f.render_widget(volume_gauge, volume_size);
                 f.render_widget(progress_gauge, progress_size);
                 f.render_widget(control_paragraph, control_size);
+                f.render_widget(search_paragraph, search_size);
             })?;
 
             if self.current_progress() == 1.0 {
@@ -478,6 +493,26 @@ impl Instance {
                             }
                             KeyCode::Char('i') => {
                                 self.autoplay_state.repeat_list = !self.autoplay_state.repeat_list;
+                            }
+                            _ => {}
+                        },
+                        CursorState::Search => match key.code {
+                            KeyCode::Char(c) => self.search.push(c),
+                            KeyCode::Backspace => {
+                                self.search.pop();
+                            }
+                            KeyCode::Delete => self.search.clear(),
+                            KeyCode::Enter => {
+                                if let Some(selected) = self.list_state.selected() {
+                                    if let Some(fmatch) =
+                                        self.files.iter().enumerate().find(|(_, file)| {
+                                            **file != self.files[selected]
+                                                && file.to_str().unwrap().contains(&self.search)
+                                        })
+                                    {
+                                        self.list_state.select(Some(fmatch.0));
+                                    }
+                                }
                             }
                             _ => {}
                         },
