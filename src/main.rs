@@ -381,7 +381,7 @@ impl Instance {
                             KeyCode::Down => match self.list_state.selected() {
                                 Some(i) => {
                                     if self.files.len() > 1 {
-                                        self.list_state.select(Some((i + 1) % self.files.len()))
+                                        self.list_state.select(Some((i + 1) % self.files.len()));
                                     }
                                 }
                                 None => self.list_state.select(Some(0)),
@@ -397,6 +397,26 @@ impl Instance {
                                     }
                                 }
                                 None => self.list_state.select(Some(self.files.len() - 1)),
+                            },
+                            KeyCode::Left => match self.list_state.selected() {
+                                Some(i) => {
+                                    if self.files.len() > 5 {
+                                        self.list_state.select(Some(if i > 4 {
+                                            (i - 5) % self.files.len()
+                                        } else {
+                                            self.files.len() - 1
+                                        }))
+                                    }
+                                }
+                                None => self.list_state.select(Some(self.files.len() - 1)),
+                            },
+                            KeyCode::Right => match self.list_state.selected() {
+                                Some(i) => {
+                                    if self.files.len() > 5 {
+                                        self.list_state.select(Some((i + 5) % self.files.len()));
+                                    }
+                                }
+                                None => self.list_state.select(Some(0)),
                             },
                             KeyCode::Char('r') => {
                                 let track = rand::random::<usize>() % self.files.len();
