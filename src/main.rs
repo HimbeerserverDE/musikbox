@@ -418,6 +418,8 @@ impl Instance {
                                 }
                                 None => self.list_state.select(Some(0)),
                             },
+                            KeyCode::Home => self.list_state.select(Some(0)),
+                            KeyCode::End => self.list_state.select(Some(self.files.len() - 1)),
                             KeyCode::Char('r') => {
                                 let track = rand::random::<usize>() % self.files.len();
                                 self.list_state.select(Some(track));
