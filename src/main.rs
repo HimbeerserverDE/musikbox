@@ -3,11 +3,13 @@ use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use gstreamer::ClockTime;
 use gstreamer_play::{Play, PlayVideoRenderer};
+use signal_hook::consts::signal::*;
 use std::fmt;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
-use std::sync::Once;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Once};
 use std::thread;
 use std::time::Duration;
 use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
@@ -180,6 +182,12 @@ impl Instance {
             let track = rand::random::<usize>() % self.files.len();
             self.play_path(self.files[track].display());
         }
+
+        let usr1 = Arc::new(AtomicBool::new(false));
+        let hup = Arc::new(AtomicBool::new(false));
+
+        signal_hook::flag::register(SIGUSR1, Arc::clone(&usr1))?;
+        signal_hook::flag::register(SIGHUP, Arc::clone(&hup))?;
 
         loop {
             terminal.draw(|f| {
@@ -355,6 +363,21 @@ impl Instance {
                 } else if self.args.no_remain {
                     break;
                 }
+            }
+
+            // Lower priority than pausing.
+            if usr1.load(Ordering::Relaxed) {
+                // SIGUSR1: play
+                self.play.play();
+
+                usr1.store(false, Ordering::Relaxed);
+            }
+
+            if hup.load(Ordering::Relaxed) {
+                // SIGHUP: pause
+                self.play.pause();
+
+                hup.store(false, Ordering::Relaxed);
             }
 
             if !event::poll(Duration::from_secs(1))? {
