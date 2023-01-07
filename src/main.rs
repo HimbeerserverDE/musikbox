@@ -53,7 +53,7 @@ struct Args {
     no_listing: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum CursorState {
     MusicList,
     Volume,
@@ -386,7 +386,10 @@ impl Instance {
 
             if let Event::Key(key) = event::read()? {
                 match key.code {
-                    KeyCode::Esc | KeyCode::Char('q') => {
+                    KeyCode::Esc => {
+                        break;
+                    }
+                    KeyCode::Char('q') if self.cursor_state != CursorState::Search => {
                         break;
                     }
                     KeyCode::Tab => {
