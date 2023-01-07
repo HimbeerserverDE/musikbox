@@ -395,7 +395,7 @@ impl Instance {
                     KeyCode::Tab => {
                         self.cursor_state.overflowing_next();
                     }
-                    KeyCode::Char(' ') => {
+                    KeyCode::Char(' ') if self.cursor_state != CursorState::Search => {
                         if self.is_paused() {
                             self.play.play();
                         } else {
