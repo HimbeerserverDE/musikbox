@@ -113,7 +113,7 @@ impl Instance {
     }
 
     fn play_path<T: fmt::Display>(&self, path: T) {
-        let uri = format!("file://{}", path);
+        let uri = format!("file://{path}");
 
         self.play.set_uri(Some(&uri));
         self.play.play();
@@ -269,7 +269,7 @@ impl Instance {
                             let total_m = duration.minutes();
                             let total_s = duration.seconds() - total_m * 60;
 
-                            format!("{}:{:0>2} / {}:{:0>2}", pos_m, pos_s, total_m, total_s)
+                            format!("{pos_m}:{pos_s:0>2} / {total_m}:{total_s:0>2}")
                         }
                         None => String::from("-:-- / -:--"),
                     }
