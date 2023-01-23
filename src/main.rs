@@ -132,7 +132,11 @@ impl Instance {
     fn current_progress(&self) -> f64 {
         if let Some(position) = self.play.position() {
             if let Some(duration) = self.play.duration() {
-                position.mseconds() as f64 / duration.mseconds() as f64
+                if duration.seconds() > 0 {
+                    position.seconds() as f64 / duration.seconds() as f64
+                } else {
+                    position.mseconds() as f64 / duration.mseconds() as f64
+                }
             } else {
                 0.0
             }
