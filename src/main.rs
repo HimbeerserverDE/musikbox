@@ -340,8 +340,6 @@ impl Instance {
             })?;
 
             if self.current_progress() == 1.0 {
-                self.play.pause();
-
                 if self.autoplay_state.repeat {
                     self.play.play();
                 } else if self.autoplay_state.sequential {
@@ -368,6 +366,8 @@ impl Instance {
                     self.play_path(self.files[track].display());
                 } else if self.args.no_remain {
                     break;
+                } else {
+                    self.play.stop();
                 }
             }
 
