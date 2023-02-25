@@ -432,12 +432,9 @@ impl Instance {
                             },
                             KeyCode::Left => match self.list_state.selected() {
                                 Some(i) => {
-                                    if self.files.len() > 5 {
-                                        self.list_state.select(Some(if i > 4 {
-                                            (i - 5) % self.files.len()
-                                        } else {
-                                            self.files.len() - 1
-                                        }))
+                                    let n = self.files.len();
+                                    if n > 5 {
+                                        self.list_state.select(Some((i + n - 5) % n))
                                     }
                                 }
                                 None => self.list_state.select(Some(self.files.len() - 1)),
